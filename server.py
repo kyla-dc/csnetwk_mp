@@ -41,10 +41,10 @@ def receive():
                     if addr in clients:
                         name_index = clients.index(addr) 
                         handle = names[name_index]
-                    messages.put((command, handle, message, addr)) #adds current message to messages array
+                    messages.put((command, handle, "", message, addr)) #adds current message to messages array
                 case "register":
                     handle = data_parsed["handle"]
-                    messages.put((command, handle, message, addr))
+                    messages.put((command, handle, "", message, addr))
                     
                     if handle not in names: 
                         if addr not in clients: 
@@ -71,7 +71,12 @@ def receive():
                 case "msg": 
                     message = data_parsed["message"]
                     handle = data_parsed["handle"]
-                    messages.put((command, handle, message, addr))
+                    if addr in clients:
+                        name_index = clients.index(addr) 
+                        sender_handle = names[name_index]
+                    else: 
+                        sender_handle = ""
+                    messages.put((command, handle, sender_handle, message, addr))
 
                     # TO DO 
                     #
@@ -108,7 +113,7 @@ def receive():
 def broadcast(): 
     while True: 
         while not messages.empty(): 
-            command, handle, message, addr = messages.get() 
+            command, handle, sender_handle, message, addr = messages.get() 
             print(message)
 
             if addr not in clients: 
@@ -127,14 +132,15 @@ def broadcast():
                         if not convert_and_send(server, reg_data, client):
                             print("Sever sending of REGISTER command has failed.")
                 case "msg": 
-                    msg_data = {"command": command, "handle": handle, "message": message} 
+                    to_data = {"command": command, "handle": "To " + handle, "message": message} 
+                    from_data =  {"command": command, "handle": "From " + sender_handle, "message": message} 
                     if handle in names: 
                         addr_index = names.index(handle)
                         to_send = clients[addr_index] 
 
-                    # if not convert_and_send(server, msg_data, to_send): #display for person being sent to
-                    #     print("Sever sending of MSG command has failed.")
-                    if not convert_and_send(server, msg_data, addr): #display for person sending 
+                    if not convert_and_send(server, from_data, to_send): #display for person being sent to
+                        print("Sever sending of MSG command has failed.")
+                    if not convert_and_send(server, to_data, addr): #display for person sending 
                         print("Sever sending of MSG command has failed.") 
 
 

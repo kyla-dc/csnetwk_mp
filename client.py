@@ -60,7 +60,7 @@ def receive():
                 case "msg":
                     message = data_parsed["message"]
                     handle = data_parsed["handle"]
-                    print(f"[To {handle}]: {message}") 
+                    print(f"[{handle}]: {message}") 
 
                     #displaying for the person sent to still incomplete 
         except: 
