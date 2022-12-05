@@ -26,7 +26,7 @@ def convert_and_send(sock, data, ip_and_port): # convert and send json to server
 def receive(): 
     while True:
         try:
-            handle = "[unregistered]"
+            handle = "[Unreg]"
             message = " "
 
             data, addr = server.recvfrom(1024)
@@ -37,11 +37,14 @@ def receive():
 
             match command: 
                 case "all":
-                    message = data_parsed["message"]
-                    messages.put((command, handle, message, addr)) #adds current message to messages array
+                    message = data_parsed["message"]                    
+                    if addr in clients:
+                        name_index = clients.index(addr) 
+                        handle = names[name_index]
+                    messages.put((command, handle, "", message, addr)) #adds current message to messages array
                 case "register":
                     handle = data_parsed["handle"]
-                    messages.put((command, handle, message, addr))
+                    messages.put((command, handle, "", message, addr))
                     
                     if handle not in names: 
                         if addr not in clients: 
@@ -68,31 +71,14 @@ def receive():
                 case "msg": 
                     message = data_parsed["message"]
                     handle = data_parsed["handle"]
-                    messages.put((command, handle, message, addr))
+                    if addr in clients:
+                        name_index = clients.index(addr) 
+                        sender_handle = names[name_index]
+                    else: 
+                        sender_handle = "Unreg"
+                    messages.put((command, handle, sender_handle, message, addr))
 
-                    # TO DO 
-                    #
-                    #
-                    # check if sender already has a handle 
-                    # if wala, they can't send a direct message 
-                    # must print wanring in client.py 
-                    #
-                    #
-                    #
-
-                    # if handle not in names: 
-                        # TO DO 
-                        #
-                        #
-                        #
-                        # (this happens if handle doesnt already exists in names array)
-                        # code cant send message to a name that doesnt exist  
-                        # must print wanring in client.py 
-                        #
-                        #
-                        #
-                        #
-                  
+        ## TO DO:
             # if client wants to close connection 
             # if data == "/leave":
             #     print("Client disconnected.")
@@ -105,18 +91,17 @@ def receive():
 def broadcast(): 
     while True: 
         while not messages.empty(): 
-            command, handle, message, addr = messages.get() 
+            command, handle, sender_handle, message, addr = messages.get() 
             print(message)
 
             if addr not in clients: 
                 clients.append(addr)
-                names.append("")
-            
-           
+                names.append("[anon]")
+                       
             match command: 
                 case "all":
                     for client in clients:
-                        msg_data = {"command": command, "message": message} # convert to dict
+                        msg_data = {"command": command, "handle": handle, "message": message} # convert to dict
                         if not convert_and_send(server, msg_data, client):
                             print("Sever sending of ALL command has failed.")
                 case "register": 
@@ -125,15 +110,27 @@ def broadcast():
                         if not convert_and_send(server, reg_data, client):
                             print("Sever sending of REGISTER command has failed.")
                 case "msg": 
-                    msg_data = {"command": command, "handle": handle, "message": message} 
-                    if handle in names: 
-                        addr_index = names.index(handle)
-                        to_send = clients[addr_index] 
-
-                    # if not convert_and_send(server, msg_data, to_send): #display for person being sent to
-                    #     print("Sever sending of MSG command has failed.")
-                    if not convert_and_send(server, msg_data, addr): #display for person sending 
-                        print("Sever sending of MSG command has failed.") 
+                    if sender_handle != "Unreg":
+                        to_data = {"command": command, "handle": "To " + handle, "message": message} 
+                        from_data =  {"command": command, "handle": "From " + sender_handle, "message": message}
+                        
+                        if handle in names: 
+                            try:
+                                addr_index = names.index(handle)
+                                to_send = clients[addr_index] 
+                            except:
+                                convert_and_send(server, "Error: Failed to send message. Please contact administrator", addr)
+                                
+                            try: 
+                                convert_and_send(server, from_data, to_send) #display for person being sent to
+                                convert_and_send(server, to_data, addr) #display for person sending 
+                            except:
+                                convert_and_send(server, "Error: Failed to send message. Please contact administrator", addr)
+                        else:
+                            print("Error: Handle or alias not found")
+                            convert_and_send(server, "Error: Handle or alias not found", addr)
+                    else:
+                        print("Error: Please register before sending a private message.")
 
 
 t1 = threading.Thread(target=receive)
