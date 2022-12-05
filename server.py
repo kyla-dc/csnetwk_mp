@@ -26,7 +26,7 @@ def convert_and_send(sock, data, ip_and_port): # convert and send json to server
 def receive(): 
     while True:
         try:
-            handle = "[unregistered]"
+            handle = "[anon]"
             message = " "
 
             data, addr = server.recvfrom(1024)
@@ -37,7 +37,10 @@ def receive():
 
             match command: 
                 case "all":
-                    message = data_parsed["message"]
+                    message = data_parsed["message"]                    
+                    if addr in clients:
+                        name_index = clients.index(addr) 
+                        handle = names[name_index]
                     messages.put((command, handle, message, addr)) #adds current message to messages array
                 case "register":
                     handle = data_parsed["handle"]
@@ -110,13 +113,12 @@ def broadcast():
 
             if addr not in clients: 
                 clients.append(addr)
-                names.append("")
-            
-           
+                names.append("[anon]")
+                       
             match command: 
                 case "all":
                     for client in clients:
-                        msg_data = {"command": command, "message": message} # convert to dict
+                        msg_data = {"command": command, "handle": handle, "message": message} # convert to dict
                         if not convert_and_send(server, msg_data, client):
                             print("Sever sending of ALL command has failed.")
                 case "register": 

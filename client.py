@@ -3,12 +3,12 @@ import json
 import threading
 import random
 
+ports = []
+names = []
+
 UDP_IP_ADDRESS = "127.0.0.1"
 UDP_PORT_NO = 6789
-randomPort = random.randint(8000,9000)
-
-# global current_user
-current_user = "[unreg]"
+randomPort = random.randint(8000,9000) #WE SUPER HAVE TO CHANGE THIS, THIS IS BAD 
 
 def convert_and_send(sock, data, ip_and_port): # convert and send json to server;
     json_data = json.dumps(data) #convert to json
@@ -50,10 +50,11 @@ def receive():
             command = data_parsed["command"]
 
             match command: 
-                case "all": 
+                case "all":
+                    handle = data_parsed["handle"]
                     message = data_parsed["message"]
-                    print(f"{handle}: {message}")       #all now displays the user name of the last person to register
-                case "register":                        #      rather than the username of the person posting 
+                    print(f"{handle}: {message}")       #agill now displays the user name of the last person to rester
+                case "register":                              #      rather than the username of the person posting 
                     handle = data_parsed["handle"]
                     print(f"Welcome {handle}!")
                 case "msg":
@@ -96,7 +97,6 @@ while True:
 
         case "/register":
             handle = input_list[1] # get handle
-            current_user = handle 
             reg_data = {"command": command_cut, "handle": handle} #convert to dict
             if not convert_and_send(clientSock, reg_data, (UDP_IP_ADDRESS, UDP_PORT_NO)):
                 print("Registration failed. Handle or alias already exists.")
