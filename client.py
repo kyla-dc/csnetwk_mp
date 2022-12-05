@@ -108,6 +108,13 @@ while True:
             if not convert_and_send(clientSock, msg_data, (UDP_IP_ADDRESS, UDP_PORT_NO)):
                 print("Handle or alias not found")
 
+        case "/grp":
+            group_name = input_list[1] # get group name
+            message = ' '.join(input_list[2:])  # get index 2 till the end for message
+            msg_data = {"command": command_cut,"group_name": group_name,"message": message} # convert to dict
+            if not convert_and_send(clientSock, msg_data, (UDP_IP_ADDRESS, UDP_PORT_NO)):
+                print("Handle or alias not found")
+
         # case "/?":
         #     command_dict = {"command": command_cut}
         #     convert_and_send(clientSock, command_dict, (UDP_IP_ADDRESS, UDP_PORT_NO))

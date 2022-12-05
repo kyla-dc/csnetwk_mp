@@ -9,6 +9,7 @@ UDP_PORT_NO = 6789
 messages = queue.Queue() #command--handle--message--address
 clients = []
 names = []
+groups = []
 
 server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 server.bind((UDP_IP_ADDRESS, UDP_PORT_NO))
@@ -41,11 +42,10 @@ def receive():
                     if addr in clients:
                         name_index = clients.index(addr) 
                         handle = names[name_index]
-                    messages.put((command, handle, "", message, addr)) #adds current message to messages array
+                    messages.put((command, handle, "", "", message, addr)) #adds current message to messages array
                 case "register":
                     handle = data_parsed["handle"]
-                    messages.put((command, handle, "", message, addr))
-                    
+                    messages.put((command, handle, "", "", message, addr))
                     if handle not in names: 
                         if addr not in clients: 
                             clients.append(addr)
@@ -76,7 +76,7 @@ def receive():
                         sender_handle = names[name_index]
                     else: 
                         sender_handle = ""
-                    messages.put((command, handle, sender_handle, message, addr))
+                    messages.put((command, handle, sender_handle, "", message, addr))
 
                     # TO DO 
                     #
@@ -100,6 +100,9 @@ def receive():
                         #
                         #
                         #
+                case "grp":
+
+                    messages.put((command, handle, sender_handle, group_name, message, addr))
                   
             # if client wants to close connection 
             # if data == "/leave":
