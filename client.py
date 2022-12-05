@@ -60,7 +60,12 @@ def receive():
                 case "msg":
                     message = data_parsed["message"]
                     handle = data_parsed["handle"]
-                    print(f"[{handle}]: {message}") 
+                    print(f"[{handle}]: {message}")
+                case "grp":
+                    message = data_parsed["message"]
+                    handle = data_parsed["handle"]
+                    group_name = data_parsed["group_name"]
+                    print(f"[{group_name}, {handle}]: {message}")
 
                     #displaying for the person sent to still incomplete 
         except: 
@@ -113,7 +118,7 @@ while True:
             message = ' '.join(input_list[2:])  # get index 2 till the end for message
             msg_data = {"command": command_cut,"group_name": group_name,"message": message} # convert to dict
             if not convert_and_send(clientSock, msg_data, (UDP_IP_ADDRESS, UDP_PORT_NO)):
-                print("Handle or alias not found")
+                print("")
 
         # case "/?":
         #     command_dict = {"command": command_cut}

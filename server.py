@@ -69,8 +69,8 @@ def receive():
                         #
                         #
                 case "msg": 
-                    message = data_parsed["message"]
                     handle = data_parsed["handle"]
+                    message = data_parsed["message"]
                     if addr in clients:
                         name_index = clients.index(addr) 
                         sender_handle = names[name_index]
@@ -101,8 +101,25 @@ def receive():
                         #
                         #
                 case "grp":
+                    group_name = data_parsed["group_name"]
+                    message = data_parsed["message"]
+                    if addr in clients:
+                        name_index = clients.index(addr) 
+                        handle = names[name_index]
+                    else: 
+                        handle = "you can't do this yo"
 
-                    messages.put((command, handle, sender_handle, group_name, message, addr))
+                    if group_name not in groups: 
+                        groups.append(group_name)
+                        groups.append([])
+                        curr_group_membs = groups.index([])
+                        groups[curr_group_membs].append(addr)
+                        print(curr_group_membs)
+                    else: 
+                        group_index = groups.index(group_name) + 1
+                        if addr not in groups[group_index]: 
+                            groups[group_index].append(addr)
+                    messages.put((command, handle, "", group_name, message, addr))
                   
             # if client wants to close connection 
             # if data == "/leave":
@@ -116,7 +133,7 @@ def receive():
 def broadcast(): 
     while True: 
         while not messages.empty(): 
-            command, handle, sender_handle, message, addr = messages.get() 
+            command, handle, sender_handle, group_name, message, addr = messages.get() 
             print(message)
 
             if addr not in clients: 
@@ -144,7 +161,13 @@ def broadcast():
                     if not convert_and_send(server, from_data, to_send): #display for person being sent to
                         print("Sever sending of MSG command has failed.")
                     if not convert_and_send(server, to_data, addr): #display for person sending 
-                        print("Sever sending of MSG command has failed.") 
+                        print("Sever sending of MSG command has failed.")
+                case "grp":
+                    group_index = groups.index(group_name) + 1
+                    for members in groups[group_index]:
+                        msg_data = {"command": command, "handle": "From " + handle , "group_name": "To " + group_name, "message": message} 
+                        if not convert_and_send(server, msg_data, members): #display for person being sent to
+                            print("Sever sending of GRP command has failed.")   
 
 
 t1 = threading.Thread(target=receive)
