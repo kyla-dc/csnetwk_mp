@@ -10,6 +10,7 @@ messages = queue.Queue() #command--handle--message--address
 clients = []
 names = []
 groups = []
+used_ports = [] 
 
 server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 server.bind((UDP_IP_ADDRESS, UDP_PORT_NO))
@@ -120,6 +121,8 @@ def receive():
                         if addr not in groups[group_index]: 
                             groups[group_index].append(addr)
                     messages.put((command, handle, "", group_name, message, addr))
+                # case "join": 
+                #     if
                   
             # if client wants to close connection 
             # if data == "/leave":

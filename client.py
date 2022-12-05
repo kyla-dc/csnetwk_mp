@@ -1,14 +1,11 @@
 import socket
 import json
 import threading
-import random
-
-ports = []
-names = []
+import random 
 
 UDP_IP_ADDRESS = "127.0.0.1"
 UDP_PORT_NO = 6789
-randomPort = random.randint(8000,9000) #WE SUPER HAVE TO CHANGE THIS, THIS IS BAD 
+randomPort = random.randint(8000,9000)
 
 def convert_and_send(sock, data, ip_and_port): # convert and send json to server;
     json_data = json.dumps(data) #convert to json
@@ -21,11 +18,7 @@ def convert_and_send(sock, data, ip_and_port): # convert and send json to server
 
 try:
     clientSock = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
-    # Note: this is probably what join does??
-    #
-    # ip address should be the same and port number should be differnet for each client 
-    # they can type whatever port number tho 
-    clientSock.bind((UDP_IP_ADDRESS, randomPort)) #DEFINE THE PORT OF THE CLIENT 
+    clientSock.bind((UDP_IP_ADDRESS, randomPort))
 except socket.error as err:
     print("Socket error because of %s", err)
 
@@ -53,8 +46,8 @@ def receive():
                 case "all":
                     handle = data_parsed["handle"]
                     message = data_parsed["message"]
-                    print(f"{handle}: {message}")       #agill now displays the user name of the last person to rester
-                case "register":                              #      rather than the username of the person posting 
+                    print(f"{handle}: {message}")       
+                case "register":                              
                     handle = data_parsed["handle"]
                     print(f"Welcome {handle}!")
                 case "msg":
@@ -67,7 +60,6 @@ def receive():
                     group_name = data_parsed["group_name"]
                     print(f"[{group_name}, {handle}]: {message}")
 
-                    #displaying for the person sent to still incomplete 
         except: 
             pass 
 
@@ -84,16 +76,23 @@ while True:
 
     match command: # still need to check for command parameters
         # case "/join":
+        #     server_ip = input_list[1]
+        #     chosen_port = input_list[2]
+        #     clientSock.bind((server_ip, chosen_port))
+
+        #     if server_ip != UDP_IP_ADDRESS: 
+        #         print("Error: Connection to the Message Board Server has failed! Please check IP Address and Port Number.")
+
         #     command_dict = {"command": command_cut} # convert to dict
         #     if not convert_and_send(clientSock, command_dict, (UDP_IP_ADDRESS, UDP_PORT_NO)): # run and check if successful
         #         print("Error: Connection to the Message Board Server has failed! Please check IP Address and Port Number.")
             
-        # case "/leave": 
-        #     command_dict = {"command": command_cut}
-        #     if not convert_and_send(clientSock, command_dict, (UDP_IP_ADDRESS, UDP_PORT_NO)):
-        #         print("Erorr: Disconnection failed. Please connect to the server first.")
-        #     # print("Connection closed. Thank you!")
-        #     # break
+        case "/leave": 
+            # command_dict = {"command": command_cut}
+            # if not convert_and_send(clientSock, command_dict, (UDP_IP_ADDRESS, UDP_PORT_NO)):
+            #     print("Erorr: Disconnection failed. Please connect to the server first.")
+            print("Connection closed. Thank you!")
+            break
         
         case "/all":
             message = ' '.join(input_list[1:]) # get index 1 till the end for message
@@ -128,4 +127,4 @@ while True:
             print("Error: Command not found")
 
 
-#client.close() 
+clientSock.close() 
