@@ -56,18 +56,9 @@ def receive():
                                 names[name_index] = handle
                             # print(clients[name_index])
                             # print(names[name_index])
-                    #else: 
-                        # TO DO 
-                        #
-                        #
-                        #
-                        # (this happens if handle already exists in names array)
-                        # code should not accept duplicate handles/names 
-                        # must print wanring in client.py 
-                        #
-                        #
-                        #
-                        #
+                    else: 
+                        messages.put((command, "unreg", "", "",message, addr))
+
                 case "msg": 
                     message = data_parsed["message"]
                     handle = data_parsed["handle"]
@@ -106,9 +97,21 @@ def broadcast():
                             print("Sever sending of ALL command has failed.")
                 case "register": 
                     for client in clients:
+<<<<<<< Updated upstream
                         reg_data = {"command": command, "handle": handle}
                         if not convert_and_send(server, reg_data, client):
                             print("Sever sending of REGISTER command has failed.")
+=======
+                        if handle != "unreg":
+                            reg_data = {"command": command, "handle": handle}
+                            convert_and_send(server, reg_data, client)
+                        else:
+                            reg_data = {"command": command, "handle": handle}
+                            convert_and_send(server, "Error: Registration failed. Handle or alias already exists.", addr)
+                            print("Error: Registration failed. Handle or alias already exists.")
+                            break
+                    print(f"Register: {handle}")
+>>>>>>> Stashed changes
                 case "msg": 
                     if sender_handle != "Unreg":
                         to_data = {"command": command, "handle": "To " + handle, "message": message} 
@@ -132,6 +135,17 @@ def broadcast():
                     else:
                         print("Error: Please register before sending a private message.")
 
+<<<<<<< Updated upstream
+=======
+                case "grp":
+                    group_index = groups.index(group_name) + 1
+                    for member in groups[group_index]:
+                        msg_data = {"command": command, "handle": "From " + handle , "group_name": "To " + group_name, "message": message} 
+                        if not convert_and_send(server, msg_data, member): #display for person being sent to
+                            print("Sever sending of GRP command has failed.")
+                    print(f"GRP: To {group_name}, From {handle}: {message}")
+
+>>>>>>> Stashed changes
 
 t1 = threading.Thread(target=receive)
 t2 = threading.Thread(target=broadcast)
