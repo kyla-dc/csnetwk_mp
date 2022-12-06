@@ -38,19 +38,37 @@ def receive():
             
 
             match command:
+                case "join": 
+                    port = addr[1]                    
+                    if port not in used_ports:
+                        used_ports.append(port)
+                        print(f"Port {port} succesffully linked to server.")
+                        #return to client -- "Connection to message board server is successful" 
+                        #note: we could also send the errors via a json ??? or somethin 
+                        #we can send them to section 3 to go to client 
+                    else:
+                        print(f"Port {port} already in use") 
+                        #also we can't allow them to do any other actions until they have joined 
+                        #return an error in client -- cannot use that port, it's already in use
+                        #note: we could also send the errors via a json ??? or somethin 
+                        #we can send them to section 3 to go to client  
+
+
                 # case "leave": 
+                #     port = addr[1]
                 #     if addr in clients: 
                 #         addr_index = clients.index(addr)
                 #         add_name = names[addr_index]
                 #         clients.remove(addr)
                 #         names.remove(add_name)
 
-                #     if addr[1] in used_ports: 
-                #         used_ports.remove(addr[1])
+                #     if port in used_ports: 
+                #         used_ports.remove(port)
 
                 #     for x in groups: 
                 #         if addr in groups[x]: 
                 #             groups[x].remove(addr) 
+                #     print("Sucessfully removed client's informaion.")
 
                 case "all":
                     message = data_parsed["message"]                    
@@ -134,13 +152,7 @@ def receive():
                         if addr not in groups[group_index]: 
                             groups[group_index].append(addr)
                     messages.put((command, handle, "", group_name, message, addr))
-                # case "join": 
-                #     if
-                  
-            # if client wants to close connection 
-            # if data == "/leave":
-            #     print("Client disconnected.")
-            #     break
+                
         except: 
             pass 
 
@@ -194,5 +206,3 @@ t2 = threading.Thread(target=broadcast)
 
 t1.start()
 t2.start() 
-
-# server.close()
