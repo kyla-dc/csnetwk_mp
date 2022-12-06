@@ -52,10 +52,16 @@ def receive():
                     group_name = data_parsed["group_name"]
                     print(f"[{group_name}, {handle}]: {message}")
 
-        except: 
-            pass 
-
-
+        except:
+            try: # check if there was data passed
+                data_parsed = json.loads(data)
+                if data_parsed[:5] == "Error":
+                    print(data_parsed)
+                else:
+                    print("Unexpected error") 
+            except:
+                pass
+            
 t = threading.Thread(target=receive) 
 t.start() 
 

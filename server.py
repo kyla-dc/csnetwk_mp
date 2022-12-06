@@ -122,7 +122,7 @@ def receive():
                         name_index = clients.index(addr) 
                         sender_handle = names[name_index]
                     else: 
-                        sender_handle = ""
+                        sender_handle = "unreg"
                     messages.put((command, handle, sender_handle, "", message, addr))
 
                     # TO DO 
@@ -179,7 +179,7 @@ def broadcast():
 
             if addr not in clients: 
                 clients.append(addr)
-                names.append("[unreg]")
+                names.append("unreg")
                        
             match command: 
                 case "all":
@@ -195,17 +195,31 @@ def broadcast():
                             print("Sever sending of REGISTER command has failed.")
                     print(f"Register: {handle}")
                 case "msg": 
-                    to_data = {"command": command, "handle": "To " + handle, "message": message} 
-                    from_data =  {"command": command, "handle": "From " + sender_handle, "message": message} 
-                    if handle in names: 
-                        addr_index = names.index(handle)
-                        to_send = clients[addr_index] 
+                    print("Server handle: ", sender_handle)
+                    if sender_handle != "unreg":
+                        to_data = {"command": command, "handle": "To " + handle, "message": message} 
+                        from_data =  {"command": command, "handle": "From " + sender_handle, "message": message}
 
-                    if not convert_and_send(server, from_data, to_send): #display for person being sent to
-                        print("Sever sending of MSG command has failed.")
-                    if not convert_and_send(server, to_data, addr): #display for person sending 
-                        print("Sever sending of MSG command has failed.")
-                    print(f"MSG: To {handle}, from {sender_handle}: {message}")
+                        if handle in names: 
+                            try:
+                                addr_index = names.index(handle)
+                                to_send = clients[addr_index] 
+                            except:
+                                convert_and_send(server, "Error: Failed to send message. Please contact administrator", addr)
+
+                            try: 
+                                convert_and_send(server, from_data, to_send) #display for person being sent to
+                                convert_and_send(server, to_data, addr) #display for person sending 
+                                print(f"MSG: To {handle}, from {sender_handle}: {message}") # Send to server
+                            except:
+                                convert_and_send(server, "Error: Failed to send message. Please contact administrator", addr)
+                        else:
+                            print("Error: Handle or alias not found")
+                            convert_and_send(server, "Error: Handle or alias not found", addr)
+                    else:
+                        convert_and_send(server, "Error: Please register before sending a private message.", addr)
+                        print("Error: Please register before sending a private message.")
+
                 case "grp":
                     group_index = groups.index(group_name) + 1
                     for member in groups[group_index]:
