@@ -115,9 +115,15 @@ while True:
             if not convert_and_send(clientSock, msg_data, (UDP_IP_ADDRESS, UDP_PORT_NO)):
                 print("")
 
-        # case "/?":
-        #     command_dict = {"command": command_cut}
-        #     convert_and_send(clientSock, command_dict, (UDP_IP_ADDRESS, UDP_PORT_NO))
+        case "/?": #DONE
+            print("[ALL ACCEPTED COMMANDS] ")
+            print("/join <server_ip_add> <port> - Join a server")
+            print("/leave - leave a server")
+            print("/register <handle> - register a user")
+            print("/all <message> - send a message to all users")
+            print("/msg <handle> <message> - send a private message to a user")
+            print("/grp <group_name> <message> - join/create a group chat and send a message to it")
+            print("/? - show all commands")
         
         case _: #DONE
             print("Error: Command not found")
