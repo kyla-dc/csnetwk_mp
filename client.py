@@ -67,7 +67,7 @@ while True:
     command_cut = command[1:]
 
     match command: # still need to check for command parameters
-        case "/join":
+        case "/join": #Note: we shouldn't allow them to input any other commands if they have not joined yet 
             check = 1 
             server_ip = input_list[1]
             chosen_port = int(input_list[2]) 
@@ -83,12 +83,12 @@ while True:
                 if not convert_and_send(clientSock, command_dict, (UDP_IP_ADDRESS, UDP_PORT_NO)): # run and check if successful
                     print("Error: Connection to the Message Board Server has failed! Please check IP Address and Port Number.")
             
-        # case "/leave": 
-        #     command_dict = {"command": command_cut}
-        #     if not convert_and_send(clientSock, command_dict, (UDP_IP_ADDRESS, UDP_PORT_NO)):
-        #         print("Erorr: Disconnection failed. Please connect to the server first.")
-        #     print("Connection closed. Thank you!")
-        #     break
+        case "/leave": #DONE 
+            command_dict = {"command": command_cut}
+            if not convert_and_send(clientSock, command_dict, (UDP_IP_ADDRESS, UDP_PORT_NO)):
+                print("Erorr: Disconnection failed. Please connect to the server first.")
+            print("Connection closed. Thank you!")
+            break
         
         case "/all": #DONE 
             message = ' '.join(input_list[1:]) # get index 1 till the end for message

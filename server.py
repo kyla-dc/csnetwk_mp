@@ -54,21 +54,35 @@ def receive():
                         #we can send them to section 3 to go to client  
 
 
-                # case "leave": 
-                #     port = addr[1]
-                #     if addr in clients: 
-                #         addr_index = clients.index(addr)
-                #         add_name = names[addr_index]
-                #         clients.remove(addr)
-                #         names.remove(add_name)
-
-                #     if port in used_ports: 
-                #         used_ports.remove(port)
-
-                #     for x in groups: 
-                #         if addr in groups[x]: 
-                #             groups[x].remove(addr) 
-                #     print("Sucessfully removed client's informaion.")
+                case "leave": 
+                    # print(">>>>    Before remove")
+                    # print(clients)
+                    # print(names)
+                    # print(used_ports)
+                    # print(groups)
+                    port = addr[1]
+                    if addr in clients: 
+                        addr_index = clients.index(addr)
+                        add_name = names[addr_index]
+                        clients.remove(addr)
+                        names.remove(add_name)
+                    if port in used_ports: 
+                        used_ports.remove(port)
+                    for group in groups: 
+                        if type(group) == list: 
+                            if addr in group:
+                                group.remove(addr)
+                                if len(group) == 0: 
+                                    index = groups.index(group)
+                                    groups.remove(group)
+                                    groups.pop(index-1)
+                    
+                    # print(">>>>   After remove")
+                    # print(clients)
+                    # print(names)
+                    # print(used_ports)
+                    # print(groups)
+                    print("Sucessfully removed client's informaion.")
 
                 case "all":
                     message = data_parsed["message"]                    
