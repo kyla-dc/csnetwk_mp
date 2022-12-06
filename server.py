@@ -35,13 +35,69 @@ def receive():
             command = data_parsed["command"]
             
 
+<<<<<<< Updated upstream
             match command: 
+=======
+            match command:
+                case "join":
+                    port = addr[1]                    
+                    if port not in used_ports:
+                        used_ports.append(port)
+                        print(f"Port {port} succesffully linked to server.")
+                        messages.put((command, port, "", "", "CONNECTED", addr)) # add to array connected
+                        #return to client -- "Connection to message board server is successful" 
+                        #note: we could also send the errors via a json ??? or somethin 
+                        #we can send them to section 3 to go to client 
+                    else:
+                        print(f"Port {port} already in use") 
+                        messages.put((command, handle, "", "", "ERROR", addr)) # add to array error
+                        #also we can't allow them to do any other actions until they have joined 
+                        #return an error in client -- cannot use that port, it's already in use
+                        #note: we could also send the errors via a json ??? or somethin 
+                        #we can send them to section 3 to go to client  
+
+
+                case "leave": 
+                    # print(">>>>    Before remove")
+                    # print(clients)
+                    # print(names)
+                    # print(used_ports)
+                    # print(groups)
+                    port = addr[1]
+                    if port in used_ports:
+                        if addr in clients: 
+                            addr_index = clients.index(addr)
+                            add_name = names[addr_index]
+                            clients.remove(addr)
+                            names.remove(add_name)
+                        if port in used_ports: 
+                            used_ports.remove(port)
+                        for group in groups: 
+                            if type(group) == list: 
+                                if addr in group:
+                                    group.remove(addr)
+                                    if len(group) == 0: 
+                                        index = groups.index(group)
+                                        groups.remove(group)
+                                        groups.pop(index-1)
+                        print("Sucessfully removed client's informaion.")
+                    else:
+                        print(f"Error: Disconnection failed. Please connect to the server first.") 
+                        messages.put((command, handle, "", "", "ERROR", addr))
+
+
+>>>>>>> Stashed changes
                 case "all":
                     message = data_parsed["message"]                    
                     if addr in clients:
                         name_index = clients.index(addr) 
                         handle = names[name_index]
+<<<<<<< Updated upstream
                     messages.put((command, handle, "", message, addr)) #adds current message to messages array
+=======
+                    messages.put((command, handle, "", "", message, addr)) #adds current message to messages array
+
+>>>>>>> Stashed changes
                 case "register":
                     handle = data_parsed["handle"]
                     messages.put((command, handle, "", message, addr))
@@ -89,12 +145,31 @@ def broadcast():
                 clients.append(addr)
                 names.append("[anon]")
                        
-            match command: 
+            match command:
+                case "join":
+                    msg_data = {"command": command}
+                    if message == "CONNECTED":
+                        convert_and_send(server, "Connection to message board server is successful", addr)
+                    else:
+                        convert_and_send(server, ("Error: Port ", handle, " already in use."), addr)
+
+                case "leave": 
+                    msg_data = {"command": command}
+                    if message == "ERROR":
+                        convert_and_send(server, "Error: Disconnection failed. Please connect to the server first.", addr)
+                    else:
+                        convert_and_send(server, "Connection closed. Thank you!", addr)
+                        
                 case "all":
                     for client in clients:
                         msg_data = {"command": command, "handle": handle, "message": message} # convert to dict
                         if not convert_and_send(server, msg_data, client):
                             print("Sever sending of ALL command has failed.")
+<<<<<<< Updated upstream
+=======
+                    print(f"ALL: {message}")
+
+>>>>>>> Stashed changes
                 case "register": 
                     for client in clients:
 <<<<<<< Updated upstream
@@ -111,6 +186,10 @@ def broadcast():
                             print("Error: Registration failed. Handle or alias already exists.")
                             break
                     print(f"Register: {handle}")
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+                    
 >>>>>>> Stashed changes
                 case "msg": 
                     if sender_handle != "Unreg":

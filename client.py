@@ -46,6 +46,13 @@ def receive():
             command = data_parsed["command"]
 
             match command: 
+                case "join":
+                    message = data_parsed["message"]
+                    print(f"{message}")
+
+                case "leave":
+                    message = data_parsed["message"]
+                    print(f"{message}")
                 case "all":
                     handle = data_parsed["handle"]
                     message = data_parsed["message"]
@@ -56,6 +63,7 @@ def receive():
                 case "msg":
                     message = data_parsed["message"]
                     handle = data_parsed["handle"]
+<<<<<<< Updated upstream
                     print(f"[{handle}]: {message}") 
 
                     #displaying for the person sent to still incomplete 
@@ -66,6 +74,27 @@ def receive():
                 print("Unexpected error")
 
 
+=======
+                    print(f"[{handle}]: {message}")
+                case "grp":
+                    message = data_parsed["message"]
+                    handle = data_parsed["handle"]
+                    group_name = data_parsed["group_name"]
+                    print(f"[{group_name}, {handle}]: {message}")
+
+        except:
+            try: # check if there was data passed
+                data_parsed = json.loads(data)
+                if data_parsed[:5] == "Error":
+                    print(data_parsed)
+                elif data_parsed[:10] == "Connection": # for join
+                    print("")
+                else:
+                    print("Unexpected error") 
+            except:
+                pass
+            
+>>>>>>> Stashed changes
 t = threading.Thread(target=receive) 
 t.start() 
 
@@ -77,6 +106,7 @@ while True:
     command_cut = command[1:]
 
     match command: # still need to check for command parameters
+<<<<<<< Updated upstream
         # case "/join":
         #     command_dict = {"command": command_cut} # convert to dict
         #     if not convert_and_send(clientSock, command_dict, (UDP_IP_ADDRESS, UDP_PORT_NO)): # run and check if successful
@@ -88,6 +118,33 @@ while True:
         #         print("Erorr: Disconnection failed. Please connect to the server first.")
         #     # print("Connection closed. Thank you!")
         #     # break
+=======
+        case "/join": #Note: we shouldn't allow them to input any other commands if they have not joined yet 
+            check = 1 
+            server_ip = input_list[1]
+            chosen_port = int(input_list[2]) 
+
+            if server_ip != UDP_IP_ADDRESS:
+                check = 0
+                print("Error: Connection to the Message Board Server has failed! Please check IP Address and Port Number. Use /join <server_ip_add> <port>")
+
+            if check: 
+                # client must be bound to chosen port before being sent to the server 
+                try: 
+                    clientSock.bind((server_ip, chosen_port))
+                    command_dict = {"command": command_cut} # convert to dict
+                    if not convert_and_send(clientSock, command_dict, (UDP_IP_ADDRESS, UDP_PORT_NO)): # run and check if successful
+                        print("Error: Connection to the Message Board Server has failed! Please check IP Address and Port Number. Use /join <server_ip_add> <port>")
+                    else:
+                        print("Connection to message board server is successful")
+                except:
+                    print("Error: Connection to the Message Board Server has failed! Please check IP Address and Port Number. Use /join <server_ip_add> <port>")
+            
+        case "/leave": #DONE 
+            command_dict = {"command": command_cut}
+            if not convert_and_send(clientSock, command_dict, (UDP_IP_ADDRESS, UDP_PORT_NO)):
+                print("Erorr: Disconnection failed. Please connect to the server first.")
+>>>>>>> Stashed changes
         
         case "/all":
             message = ' '.join(input_list[1:]) # get index 1 till the end for message
@@ -98,7 +155,7 @@ while True:
             handle = input_list[1] # get handle
             reg_data = {"command": command_cut, "handle": handle} #convert to dict
             if not convert_and_send(clientSock, reg_data, (UDP_IP_ADDRESS, UDP_PORT_NO)):
-                print("Registration failed. Handle or alias already exists.")
+                print("Registration failed. Handle or alias already exists. Use /register <handle>")
 
         case "/msg":
             handle = input_list[1] # get handle
@@ -107,9 +164,28 @@ while True:
             if not convert_and_send(clientSock, msg_data, (UDP_IP_ADDRESS, UDP_PORT_NO)):
                 print("Handle or alias not found")
 
+<<<<<<< Updated upstream
         # case "/?":
         #     command_dict = {"command": command_cut}
         #     convert_and_send(clientSock, command_dict, (UDP_IP_ADDRESS, UDP_PORT_NO))
+=======
+        case "/grp": #DONE 
+            group_name = input_list[1] # get group name
+            message = ' '.join(input_list[2:])  # get index 2 till the end for message
+            msg_data = {"command": command_cut,"group_name": group_name,"message": message} # convert to dict
+            if not convert_and_send(clientSock, msg_data, (UDP_IP_ADDRESS, UDP_PORT_NO)):
+                print("")
+
+        case "/?": #DONE
+            print("[COMMAND LIST] ")
+            print("/join <server_ip_add> <port> - Join a server")
+            print("/leave - leave a server")
+            print("/register <handle> - register a user")
+            print("/all <message> - send a message to all users")
+            print("/msg <handle> <message> - send a private message to a user")
+            print("/grp <group_name> <message> - join/create a group chat and send a message to it")
+            print("/? - show all commands")
+>>>>>>> Stashed changes
         
         case _:
             print("Error: Command not found")
