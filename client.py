@@ -24,16 +24,8 @@ except socket.error as err:
 
 
 
-
 #[4] get info from server and display to clients 
 def receive():
-
-    # Issue found: 
-    #     the program will change the handle of the current user based on 
-    #     the newest handle that was registred -- thats no bueno 
-
-    # global handle 
-    # handle = "[unregsitered]" 
 
     while True: 
         try:
@@ -87,32 +79,32 @@ while True:
         #     if not convert_and_send(clientSock, command_dict, (UDP_IP_ADDRESS, UDP_PORT_NO)): # run and check if successful
         #         print("Error: Connection to the Message Board Server has failed! Please check IP Address and Port Number.")
             
-        case "/leave": 
-            # command_dict = {"command": command_cut}
-            # if not convert_and_send(clientSock, command_dict, (UDP_IP_ADDRESS, UDP_PORT_NO)):
-            #     print("Erorr: Disconnection failed. Please connect to the server first.")
-            print("Connection closed. Thank you!")
-            break
+        # case "/leave": 
+        #     command_dict = {"command": command_cut}
+        #     if not convert_and_send(clientSock, command_dict, (UDP_IP_ADDRESS, UDP_PORT_NO)):
+        #         print("Erorr: Disconnection failed. Please connect to the server first.")
+        #     print("Connection closed. Thank you!")
+        #     break
         
-        case "/all":
+        case "/all": #DONE 
             message = ' '.join(input_list[1:]) # get index 1 till the end for message
             msg_data = {"command": command_cut, "message": message} # convert to dict
             convert_and_send(clientSock, msg_data, (UDP_IP_ADDRESS, UDP_PORT_NO))
 
-        case "/register":
+        case "/register": #DONE
             handle = input_list[1] # get handle
             reg_data = {"command": command_cut, "handle": handle} #convert to dict
             if not convert_and_send(clientSock, reg_data, (UDP_IP_ADDRESS, UDP_PORT_NO)):
                 print("Registration failed. Handle or alias already exists.")
 
-        case "/msg":
+        case "/msg": #DONE
             handle = input_list[1] # get handle
             message = ' '.join(input_list[2:])  # get index 2 till the end for message
             msg_data = {"command": command_cut, "handle": handle, "message": message} # convert to dict
             if not convert_and_send(clientSock, msg_data, (UDP_IP_ADDRESS, UDP_PORT_NO)):
                 print("Handle or alias not found")
 
-        case "/grp":
+        case "/grp": #DONE 
             group_name = input_list[1] # get group name
             message = ' '.join(input_list[2:])  # get index 2 till the end for message
             msg_data = {"command": command_cut,"group_name": group_name,"message": message} # convert to dict
@@ -123,7 +115,7 @@ while True:
         #     command_dict = {"command": command_cut}
         #     convert_and_send(clientSock, command_dict, (UDP_IP_ADDRESS, UDP_PORT_NO))
         
-        case _:
+        case _: #DONE
             print("Error: Command not found")
 
 

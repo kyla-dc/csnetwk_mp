@@ -6,7 +6,7 @@ import queue
 UDP_IP_ADDRESS = "127.0.0.1"
 UDP_PORT_NO = 6789
 
-messages = queue.Queue() #command--handle--message--address
+messages = queue.Queue() #command--handle--sender_handle--group_name--message--address
 clients = []
 names = []
 groups = []
@@ -28,7 +28,7 @@ def convert_and_send(sock, data, ip_and_port): # convert and send json to server
 def receive(): 
     while True:
         try:
-            handle = "[anon]"
+            handle = "[unreg]"
             message = " "
 
             data, addr = server.recvfrom(1024)
@@ -37,7 +37,21 @@ def receive():
             command = data_parsed["command"]
             
 
-            match command: 
+            match command:
+                # case "leave": 
+                #     if addr in clients: 
+                #         addr_index = clients.index(addr)
+                #         add_name = names[addr_index]
+                #         clients.remove(addr)
+                #         names.remove(add_name)
+
+                #     if addr[1] in used_ports: 
+                #         used_ports.remove(addr[1])
+
+                #     for x in groups: 
+                #         if addr in groups[x]: 
+                #             groups[x].remove(addr) 
+
                 case "all":
                     message = data_parsed["message"]                    
                     if addr in clients:
@@ -108,14 +122,13 @@ def receive():
                         name_index = clients.index(addr) 
                         handle = names[name_index]
                     else: 
-                        handle = "you can't do this yo"
+                        handle = "[unreg]"
 
                     if group_name not in groups: 
                         groups.append(group_name)
                         groups.append([])
                         curr_group_membs = groups.index([])
                         groups[curr_group_membs].append(addr)
-                        print(curr_group_membs)
                     else: 
                         group_index = groups.index(group_name) + 1
                         if addr not in groups[group_index]: 
@@ -137,11 +150,10 @@ def broadcast():
     while True: 
         while not messages.empty(): 
             command, handle, sender_handle, group_name, message, addr = messages.get() 
-            print(message)
 
             if addr not in clients: 
                 clients.append(addr)
-                names.append("[anon]")
+                names.append("[unreg]")
                        
             match command: 
                 case "all":
@@ -149,11 +161,13 @@ def broadcast():
                         msg_data = {"command": command, "handle": handle, "message": message} # convert to dict
                         if not convert_and_send(server, msg_data, client):
                             print("Sever sending of ALL command has failed.")
+                    print(f"ALL: {message}")
                 case "register": 
                     for client in clients:
                         reg_data = {"command": command, "handle": handle}
                         if not convert_and_send(server, reg_data, client):
                             print("Sever sending of REGISTER command has failed.")
+                    print(f"Register: {handle}")
                 case "msg": 
                     to_data = {"command": command, "handle": "To " + handle, "message": message} 
                     from_data =  {"command": command, "handle": "From " + sender_handle, "message": message} 
@@ -165,12 +179,14 @@ def broadcast():
                         print("Sever sending of MSG command has failed.")
                     if not convert_and_send(server, to_data, addr): #display for person sending 
                         print("Sever sending of MSG command has failed.")
+                    print(f"MSG: To {handle}, from {sender_handle}: {message}")
                 case "grp":
                     group_index = groups.index(group_name) + 1
-                    for members in groups[group_index]:
+                    for member in groups[group_index]:
                         msg_data = {"command": command, "handle": "From " + handle , "group_name": "To " + group_name, "message": message} 
-                        if not convert_and_send(server, msg_data, members): #display for person being sent to
-                            print("Sever sending of GRP command has failed.")   
+                        if not convert_and_send(server, msg_data, member): #display for person being sent to
+                            print("Sever sending of GRP command has failed.")
+                    print(f"GRP: To {group_name}, From {handle}: {message}")   
 
 
 t1 = threading.Thread(target=receive)
