@@ -82,7 +82,7 @@ def receive():
                     # print(names)
                     # print(used_ports)
                     # print(groups)
-                    print("Sucessfully removed client's informaion.")
+                    print("Client left. Sucessfully removed client's informaion.")
 
                 case "all":
                     message = data_parsed["message"]                    
@@ -188,24 +188,26 @@ def broadcast():
                         if not convert_and_send(server, msg_data, client):
                             print("Sever sending of ALL command has failed.")
                     print(f"ALL: {message}")
+                
                 case "register": 
                     for client in clients:
                         reg_data = {"command": command, "handle": handle}
                         if not convert_and_send(server, reg_data, client):
                             print("Sever sending of REGISTER command has failed.")
                     print(f"Register: {handle}")
+                
                 case "msg": 
                     to_data = {"command": command, "handle": "To " + handle, "message": message} 
                     from_data =  {"command": command, "handle": "From " + sender_handle, "message": message} 
                     if handle in names: 
                         addr_index = names.index(handle)
                         to_send = clients[addr_index] 
-
                     if not convert_and_send(server, from_data, to_send): #display for person being sent to
                         print("Sever sending of MSG command has failed.")
                     if not convert_and_send(server, to_data, addr): #display for person sending 
                         print("Sever sending of MSG command has failed.")
                     print(f"MSG: To {handle}, from {sender_handle}: {message}")
+                
                 case "grp":
                     group_index = groups.index(group_name) + 1
                     for member in groups[group_index]:
