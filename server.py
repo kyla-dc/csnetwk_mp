@@ -93,31 +93,15 @@ def receive():
                         name_index = clients.index(addr) 
                         sender_handle = names[name_index]
                     else: 
-                        sender_handle = ""
+                        sender_handle = "unreg"
+                    if handle not in names: 
+                        error = 1
+                    if handle == sender_handle:
+                        error = 2
+                    if handle == "unreg": 
+                        error = 3
                     messages.put((command, handle, sender_handle, group_name, message, error, addr))
 
-                    # TO DO 
-                    #
-                    #
-                    # check if sender already has a handle 
-                    # if wala, they can't send a direct message 
-                    # must print wanring in client.py 
-                    #
-                    #
-                    #
-
-                    # if handle not in names: 
-                        # TO DO 
-                        #
-                        #
-                        #
-                        # (this happens if handle doesnt already exists in names array)
-                        # code cant send message to a name that doesnt exist  
-                        # must print wanring in client.py 
-                        #
-                        #
-                        #
-                        #
                 case "grp":
                     group_name = data_parsed["group_name"]
                     message = data_parsed["message"]
@@ -126,7 +110,6 @@ def receive():
                         handle = names[name_index]
                     else: 
                         handle = "unreg"
-
                     if group_name not in groups: 
                         groups.append(group_name)
                         groups.append([])
@@ -172,16 +155,24 @@ def broadcast():
                         print("Register failed: Invalid handle (unreg)")
                 
                 case "msg": 
-                    to_data = {"command": command, "handle": "To " + handle, "message": message} 
-                    from_data =  {"command": command, "handle": "From " + sender_handle, "message": message} 
-                    if handle in names: 
-                        addr_index = names.index(handle)
-                        to_send = clients[addr_index] 
-                    if not convert_and_send(server, from_data, to_send): #display for person being sent to
-                        print("Sever sending of MSG command has failed.")
+                    to_data = {"command": command, "handle": "To " + handle, "message": message, "error": error} 
+                    from_data =  {"command": command, "handle": "From " + sender_handle, "message": message, "error": error} 
+                    if error == 0: 
+                        if handle in names: 
+                            addr_index = names.index(handle)
+                            to_send = clients[addr_index] 
+                            if not convert_and_send(server, from_data, to_send): #display for person being sent to
+                                print("Sever sending of MSG command has failed.")
                     if not convert_and_send(server, to_data, addr): #display for person sending 
                         print("Sever sending of MSG command has failed.")
-                    print(f"MSG: To {handle}, from {sender_handle}: {message}")
+                    if error == 0: 
+                        print(f"MSG: To {handle}, from {sender_handle}: {message}")
+                    elif error == 1: 
+                        print("MSG failed: Provided handle not found")
+                    elif error == 2: 
+                        print("MSG failed: Cannot direct message self")
+                    elif error == 3: 
+                        print("MSG failed: Cannot direct message unregistered")
                 
                 case "grp":
                     group_index = groups.index(group_name) + 1

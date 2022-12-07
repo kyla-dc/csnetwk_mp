@@ -42,7 +42,15 @@ def receive():
                 case "msg":
                     message = data_parsed["message"]
                     handle = data_parsed["handle"]
-                    print(f"[{handle}]: {message}")
+                    error = data_parsed["error"]
+                    if error == 0: 
+                        print(f"[{handle}]: {message}")
+                    elif error == 1: 
+                        print("Error: Handle or alias not found.")
+                    elif error == 2: 
+                        print("Error: Cannot direct message yourself.")
+                    elif error == 3: 
+                        print("Error: Cannot direct message an unregistered client.")
                 case "grp":
                     message = data_parsed["message"]
                     handle = data_parsed["handle"]
@@ -96,21 +104,21 @@ while True:
                 handle = input_list[1] # get handle
                 reg_data = {"command": command_cut, "handle": handle} #convert to dict
                 if not convert_and_send(clientSock, reg_data, (UDP_IP_ADDRESS, UDP_PORT_NO)):
-                    print("Registration failed. Handle or alias already exists.")
+                    print("Error: Register command was not sent to server.")
 
             case "/msg": 
                 handle = input_list[1] # get handle
                 message = ' '.join(input_list[2:])  # get index 2 till the end for message
                 msg_data = {"command": command_cut, "handle": handle, "message": message} # convert to dict
                 if not convert_and_send(clientSock, msg_data, (UDP_IP_ADDRESS, UDP_PORT_NO)):
-                    print("Handle or alias not found")
+                    print("Error: Msg command was not sent to server.")
 
             case "/grp":  
                 group_name = input_list[1] # get group name
                 message = ' '.join(input_list[2:])  # get index 2 till the end for message
                 msg_data = {"command": command_cut,"group_name": group_name,"message": message} # convert to dict
                 if not convert_and_send(clientSock, msg_data, (UDP_IP_ADDRESS, UDP_PORT_NO)):
-                    print("")
+                    print("Error: Grp command was not sent to server.")
 
             case "/?": #DONE 
                 print("[ALL ACCEPTED COMMANDS] ")
