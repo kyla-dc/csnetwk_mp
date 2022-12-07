@@ -6,7 +6,7 @@ import queue
 UDP_IP_ADDRESS = "127.0.0.1"
 UDP_PORT_NO = 6789
 
-messages = queue.Queue() #command--handle--sender_handle--group_name--message--address
+messages = queue.Queue() #command--handle--sender_handle--group_name--message--error--address
 clients = []
 names = []
 groups = []
@@ -15,10 +15,10 @@ used_ports = []
 server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 server.bind((UDP_IP_ADDRESS, UDP_PORT_NO))
 
-def convert_and_send(sock, data, ip_and_port): # convert and send json to server;
-    json_data = json.dumps(data) #convert to json
-    try: # error checking
-        sock.sendto(json_data.encode(), ip_and_port) # send to server   
+def convert_and_send(sock, data, ip_and_port): 
+    json_data = json.dumps(data) 
+    try:
+        sock.sendto(json_data.encode(), ip_and_port)   
         return 1
     except:
         return 0
@@ -28,38 +28,19 @@ def convert_and_send(sock, data, ip_and_port): # convert and send json to server
 def receive(): 
     while True:
         try:
-            handle = "[unreg]"
-            message = " "
+            handle = "unreg"
+            sender_handle = ""
+            group_name = ""
+            message = ""
+            error = 0
 
             data, addr = server.recvfrom(1024)
             data = data.decode("utf-8")
             data_parsed = json.loads(data)
             command = data_parsed["command"]
             
-
             match command:
-                case "join": 
-                    port = addr[1]                    
-                    if port not in used_ports:
-                        used_ports.append(port)
-                        print(f"Port {port} succesffully linked to server.")
-                        #return to client -- "Connection to message board server is successful" 
-                        #note: we could also send the errors via a json ??? or somethin 
-                        #we can send them to section 3 to go to client 
-                    else:
-                        print(f"Port {port} already in use") 
-                        #also we can't allow them to do any other actions until they have joined 
-                        #return an error in client -- cannot use that port, it's already in use
-                        #note: we could also send the errors via a json ??? or somethin 
-                        #we can send them to section 3 to go to client  
-
-
                 case "leave": 
-                    # print(">>>>    Before remove")
-                    # print(clients)
-                    # print(names)
-                    # print(used_ports)
-                    # print(groups)
                     port = addr[1]
                     if addr in clients: 
                         addr_index = clients.index(addr)
@@ -76,23 +57,22 @@ def receive():
                                     index = groups.index(group)
                                     groups.remove(group)
                                     groups.pop(index-1)
-                    
-                    # print(">>>>   After remove")
-                    # print(clients)
-                    # print(names)
-                    # print(used_ports)
-                    # print(groups)
                     print("Client left. Sucessfully removed client's informaion.")
 
-                case "all":
+                case "all": 
+                    print(addr)
                     message = data_parsed["message"]                    
                     if addr in clients:
                         name_index = clients.index(addr) 
                         handle = names[name_index]
-                    messages.put((command, handle, "", "", message, addr)) #adds current message to messages array
+                    messages.put((command, handle, sender_handle, group_name, message, error, addr)) 
+                
                 case "register":
                     handle = data_parsed["handle"]
-                    messages.put((command, handle, "", "", message, addr))
+                    messages.put((command, handle, sender_handle, group_name, message, error, addr))
+                    if handle == "unreg":
+                        error = 2
+                        messages.put((command, handle, sender_handle, group_name, message, error, addr))
                     if handle not in names: 
                         if addr not in clients: 
                             clients.append(addr)
@@ -101,20 +81,11 @@ def receive():
                             name_index = clients.index(addr)
                             if names[name_index] != handle: 
                                 names[name_index] = handle
-                            # print(clients[name_index])
-                            # print(names[name_index])
-                    #else: 
-                        # TO DO 
-                        #
-                        #
-                        #
-                        # (this happens if handle already exists in names array)
-                        # code should not accept duplicate handles/names 
-                        # must print wanring in client.py 
-                        #
-                        #
-                        #
-                        #
+                    else: 
+                        if error == 0: 
+                            error = 1 
+                            messages.put((command, handle, sender_handle, group_name, message, error, addr))
+                       
                 case "msg": 
                     handle = data_parsed["handle"]
                     message = data_parsed["message"]
@@ -123,7 +94,7 @@ def receive():
                         sender_handle = names[name_index]
                     else: 
                         sender_handle = ""
-                    messages.put((command, handle, sender_handle, "", message, addr))
+                    messages.put((command, handle, sender_handle, group_name, message, error, addr))
 
                     # TO DO 
                     #
@@ -154,7 +125,7 @@ def receive():
                         name_index = clients.index(addr) 
                         handle = names[name_index]
                     else: 
-                        handle = "[unreg]"
+                        handle = "unreg"
 
                     if group_name not in groups: 
                         groups.append(group_name)
@@ -165,7 +136,7 @@ def receive():
                         group_index = groups.index(group_name) + 1
                         if addr not in groups[group_index]: 
                             groups[group_index].append(addr)
-                    messages.put((command, handle, "", group_name, message, addr))
+                    messages.put((command, handle, sender_handle, group_name, message, error, addr))
                 
         except: 
             pass 
@@ -175,11 +146,11 @@ def receive():
 def broadcast(): 
     while True: 
         while not messages.empty(): 
-            command, handle, sender_handle, group_name, message, addr = messages.get() 
+            command, handle, sender_handle, group_name, message, error, addr = messages.get() 
 
             if addr not in clients: 
                 clients.append(addr)
-                names.append("[unreg]")
+                names.append("unreg")
                        
             match command: 
                 case "all":
@@ -191,10 +162,15 @@ def broadcast():
                 
                 case "register": 
                     for client in clients:
-                        reg_data = {"command": command, "handle": handle}
+                        reg_data = {"command": command, "handle": handle, "error": error}
                         if not convert_and_send(server, reg_data, client):
                             print("Sever sending of REGISTER command has failed.")
-                    print(f"Register: {handle}")
+                    if error == 0:
+                        print(f"Register: {handle}")
+                    elif error == 1: 
+                        print("Register failed: Handle already exists")
+                    elif error == 2: 
+                        print("Register failed: Invalid handle (unreg)")
                 
                 case "msg": 
                     to_data = {"command": command, "handle": "To " + handle, "message": message} 
