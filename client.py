@@ -70,7 +70,7 @@ while True:
     command = input_list[0]
     command_cut = command[1:]
 
-    if (join_checker == 0 and (command == "/join" or command == "/leave")) or join_checker == 1: 
+    if ((join_checker == 0 and (command == "/join" or command == "/leave"))) or join_checker == 1: 
         match command: 
             case "/join": #DONE 
                 check = 1 
