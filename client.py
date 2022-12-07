@@ -7,10 +7,10 @@ UDP_IP_ADDRESS = "127.0.0.1"
 UDP_PORT_NO = 6789
 join_checker = 0
 
-def convert_and_send(sock, data, ip_and_port): # convert and send json to server;
-    json_data = json.dumps(data) #convert to json
-    try: # error checking
-        sock.sendto(json_data.encode(), ip_and_port) # send to server   
+def convert_and_send(sock, data, ip_and_port):
+    json_data = json.dumps(data) 
+    try: 
+        sock.sendto(json_data.encode(), ip_and_port) 
         return 1
     except:
         return 0

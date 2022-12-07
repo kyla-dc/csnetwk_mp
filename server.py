@@ -136,8 +136,7 @@ def receive():
                         group_index = groups.index(group_name) + 1
                         if addr not in groups[group_index]: 
                             groups[group_index].append(addr)
-                    messages.put((command, handle, sender_handle, group_name, message, error, addr))
-                
+                    messages.put((command, handle, sender_handle, group_name, message, error, addr))     
         except: 
             pass 
 
@@ -188,7 +187,7 @@ def broadcast():
                     group_index = groups.index(group_name) + 1
                     for member in groups[group_index]:
                         msg_data = {"command": command, "handle": "From " + handle , "group_name": "To " + group_name, "message": message} 
-                        if not convert_and_send(server, msg_data, member): #display for person being sent to
+                        if not convert_and_send(server, msg_data, member): 
                             print("Sever sending of GRP command has failed.")
                     print(f"GRP: To {group_name}, From {handle}: {message}")   
 
